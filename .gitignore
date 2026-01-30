@@ -1,0 +1,168 @@
+# ========================================
+# Terraform
+# ========================================
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Exclude all .tfvars files, which might contain sensitive data
+*.tfvars
+*.tfvars.json
+
+# Ignore override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# Ignore plan files
+*.tfplan
+
+# NOTE: .terraform.lock.hcl DEVE ser commitado no repositório!
+
+# ========================================
+# AWS
+# ========================================
+# AWS credentials
+.aws/credentials
+.aws/config
+
+# AWS CLI temporary files
+.aws/cli/cache/
+
+# ========================================
+# SSH/Chaves de Segurança
+# ========================================
+# Chaves privadas SSH
+*.pem
+*.key
+*.pub
+*.Identifier
+!README.md
+
+# ========================================
+# Ansible
+# ========================================
+# Cache
+.ansible/cache/
+
+# Arquivos temporários do Ansible
+*.pyc
+__pycache__/
+*.retry
+
+# ========================================
+# IDE e Editores
+# ========================================
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Vim
+.vim/
+*.swp
+*.swo
+*~
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Emacs
+*~
+\#*\#
+
+# ========================================
+# Sistemas Operacionais
+# ========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Desktop.ini
+.windows-build-tools/
+
+# Linux
+.directory
+
+# ========================================
+# Arquivos Temporários e Compilados
+# ========================================
+*.tmp
+*.log
+*.bak
+*.backup
+*.orig
+*.swp
+*.swo
+*~
+
+# Diretórios temporários
+.tmp/
+tmp/
+temp/
+
+# ========================================
+# Python
+# ========================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# ========================================
+# Node.js (se aplicável)
+# ========================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ========================================
+# Arquivos de Ambiente
+# ========================================
+.env
+.env.local
+.env.*.local
+
+# ========================================
+# Arquivos Específicos do Projeto
+# ========================================
+# Arquivos de teste
+test-results/
+coverage/
+
+# Arquivos de saída
+output/
+dist/
+
+# Arquivo de dados sensíveis
+secrets/
+sensitive/
