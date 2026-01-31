@@ -38,10 +38,15 @@ data "aws_ami" "ubuntu" {
     }
 }
 
+resource "aws_key_pair" "key_project" {
+  key_name = "key_project_pos"
+  public_key = file("~/.ssh/id_ed25519.pub")
+}
+
 resource "aws_instance" "web_server" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t3.micro"
-  key_name      = "key_project_pos"
+  key_name = aws_key_pair.key_project.key_name
 
   vpc_security_group_ids = [aws_security_group.web_sg.id]
 
@@ -55,7 +60,7 @@ resource "aws_instance" "web_server" {
               EOF
 
   provisioner "local-exec" {
-    command = "export ANSIBLE_HOST_KEY_CHECKING=False && ansible-playbook -i ${self.public_ip}, ../ansible/playbook.yml -u ubuntu --private-key ./key_project_pos.pem"
+    command = "export ANSIBLE_HOST_KEY_CHECKING=False && ansible-playbook -i '${self.public_ip},' ../ansible/playbook.yml -u ubuntu --private-key ~/.ssh/id_ed25519"
   }
 
   tags = {
