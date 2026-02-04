@@ -38,9 +38,34 @@ resource "aws_internet_gateway" "g_main" {
   }
 }
 
+resource "aws_subnet" "public" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.1.0/24"
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "Subnet-Publica"
+  }
+}
+
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.g_main.id
+  }
+}
+
+resource "aws_route_table_association" "public" {
+  subnet_id      = aws_subnet.public.id
+  route_table_id = aws_route_table.public.id
+}
+
 resource "aws_security_group" "webserver" {
     name = "sg_web_nginx"
     description = "Permite acesso HTTP e SSH"
+    vpc_id = aws_vpc.main.id
 
     ingress {
         from_port   = 22
@@ -73,17 +98,9 @@ resource "aws_instance" "web_server" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t3.micro"
   key_name = aws_key_pair.key_project.key_name
+  subnet_id = aws_subnet.public.id
 
-  vpc_security_group_ids = [aws_security_group.web_sg.id]
-
-  user_data = <<-EOF
-              #!/bin/bash
-              apt update -y
-              apt install nginx -y
-              systemctl start nginx
-              systemctl enable nginx
-              echo "<h1>Deploy Automatizado com Terraform e Ansible</h1>" > /var/www/html/index.html
-              EOF
+  vpc_security_group_ids = [aws_security_group.webserver.id]
 
   provisioner "local-exec" {
     command = "export ANSIBLE_HOST_KEY_CHECKING=False && ansible-playbook -i '${self.public_ip},' ../ansible/playbook.yml -u ubuntu --private-key ~/.ssh/id_ed25519"
@@ -95,5 +112,11 @@ resource "aws_instance" "web_server" {
 }
 
 output "public_ip" {
+  description = "IP of the EC2 instance"
   value = aws_instance.web_server.public_ip
+}
+
+output "web_url" {
+  description = "URL to access the web server"
+  value = "http://${aws_instance.web_server.public_ip}"
 }

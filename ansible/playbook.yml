@@ -18,3 +18,24 @@
       until: apt_result is success
       retries: 10
       delay: 10
+    
+- name: Instalação do Nginx
+  hosts: all
+  become: yes
+  tasks:
+    - name: Instalar o Nginx
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes
+
+    - name: Iniciar e habilitar o serviço Nginx
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Criar pagina HTML customizada
+      copy:
+        content: "<h1>Deploy Automatizado com Terraform e Ansible</h1>"
+        dest: /var/www/html/index.html
