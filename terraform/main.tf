@@ -102,6 +102,17 @@ resource "aws_instance" "web_server" {
 
   vpc_security_group_ids = [aws_security_group.webserver.id]
 
+  provisioner "remote-exec" {
+    inline = ["echo 'Wait for SSH connection'"]
+
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      private_key = file("~/.ssh/id_ed25519")
+      host        = self.public_ip
+    }
+  }
+
   provisioner "local-exec" {
     command = "export ANSIBLE_HOST_KEY_CHECKING=False && ansible-playbook -i '${self.public_ip},' ../ansible/playbook.yml -u ubuntu --private-key ~/.ssh/id_ed25519"
   }
