@@ -465,110 +465,259 @@ O arquivo `ansible/playbook.yml` executa configurações automaticamente na inst
 
 ## 🎯 Passo a Passo para Deploy
 
-### 1. Navegar até a pasta Terraform
+### Step 1.1: Navegação e Inicialização
 
+**Comando executado:**
 ```bash
 cd terraform/
-```
-
-### 2. Inicializar o Terraform
-
-```bash
 terraform init
 ```
 
-**O que faz**: Baixa os providers e módulos necessários, inicializa o diretório de trabalho.
+**O que acontece:** Terraform baixa os providers (especialmente o provider AWS v4.0) e inicializa o diretório de trabalho.
 
-### 3. Validar a Configuração
+**Resultado esperado:** Mensagem "Terraform has been successfully initialized!"
 
+#### 📸 Screenshot Step 1.1
+
+![Terraform Init](./src/prints/terraformInit.png)
+
+---
+
+### Step 1.2: Validação da Configuração Terraform
+
+**Comando executado:**
 ```bash
 terraform validate
 ```
 
-**O que faz**: Verifica se não há erros de sintaxe no código Terraform.
+**O que acontece:** Verifica se não há erros de sintaxe ou problemas nas configurações do Terraform.
 
-### 4. Planejar a Infraestrutura
+**Resultado esperado:** Mensagem "Success! The configuration is valid."
 
+#### 📸 Screenshot Step 1.2
+
+![Terraform Validate](./src/prints/terraformValidate.png)
+
+---
+
+### Step 1.3: Visualizar Plano de Execução
+
+**Comando executado:**
 ```bash
 terraform plan
 ```
 
-**O que faz**: Mostra um preview de todas as mudanças que serão feitas sem aplicá-las.
+**O que acontece:** Mostra um preview de todos os recursos que serão criados, sem realmente criá-los.
 
-### 5. Aplicar a Infraestrutura
+**Resultado esperado:** 
+- Listagem de 8 recursos a serem adicionados
+- Nenhuma mudança em recursos existentes
+- Nenhum recurso a ser destruído
 
+#### 📸 Screenshot Step 1.3a - Início do Plan
+
+![Terraform Plan](./src/prints/terraformPlan.png)
+
+#### 📸 Screenshot Step 1.3b - Recurso VPC
+
+![Terraform Plan VPC](./src/prints/terraformPlanVpc.png)
+
+#### 📸 Screenshot Step 1.3c - Recurso EC2
+
+![Terraform Plan EC2 part 1](./src/prints/terraformPlanEC2Um.png)
+![Terraform Plan EC2 part 2](./src/prints/terraformPlanEC2Dois.png)
+
+#### 📸 Screenshot Step 1.3d - Resumo Final
+
+![Terraform Plan Result](./src/prints/terraformPlanResult.png)
+
+---
+
+### Step 2.1: Aplicar Configuração Terraform
+
+**Comando executado:**
 ```bash
 terraform apply
 ```
 
-Confirme digitando `yes` quando solicitado.
-
-**O que faz**:
-- Cria todos os recursos AWS descritos
-- Executa o Ansible automaticamente via provisioner
-- Exibe o IP público e URL do servidor
-
-### 6. Acessar o Servidor Web
-
-Após a execução, você receberá a URL:
-
+**Confirmação:**
 ```
-http://<seu-ip-publico>
+Type 'yes' to confirm
 ```
 
-Acesse via navegador ou curl:
+**O que acontece:**
+- AWS cria todos os 8 recursos (VPC, subnet, security group, EC2, etc.)
+- Após a EC2 estar pronta, o provisioner Ansible é executado automaticamente
+- Ansible atualiza pacotes e instala Nginx na instância
 
+**Tempo estimado:** 3-5 minutos (a maioria do tempo é a EC2 iniciando)
+
+#### 📸 Screenshot Step 2.1a - Prompt de Confirmação
+
+![Terraform Apply Execute](./src/prints/terraformApplyExecute.png)
+
+![Terraform Apply Confirm](./src/prints/terraformApplyConfirm.png)
+
+
+#### 📸 Screenshot Step 2.1b - Criação de Recursos e EC2(Progresso)
+
+![Terraform Apply Create](./src/prints/terraformApplyCreate.png)
+
+
+#### 📸 Screenshot Step 2.1c - Execução do Ansible
+
+![Terraform Apply Ansible](./src/prints/terraformApplyAnsible.png)
+
+#### 📸 Screenshot Step 2.1d - Conclusão do Apply
+
+![Terraform Apply Complete](./src/prints/terraformApplyComplete.png)
+
+---
+
+### Step 2.2: Capturar Outputs
+
+**Comando executado:**
 ```bash
-curl http://<seu-ip-publico>
+terraform output
+```
+
+**O que isso mostra:**
+- IP público da EC2 (`public_ip`)
+- URL para acessar o servidor (`web_url`)
+
+#### 📸 Screenshot Step 2.2 - Outputs
+
+![Terraform Output](./src/prints/terraformOutput.png)
+
+---
+
+### Step 3.1: Conectar via SSH na EC2
+
+**Comando executado:**
+```bash
+ssh -i ~/.ssh/id_ed25519 ubuntu@<IP_PUBLICO>
+```
+
+Substitua `<IP_PUBLICO>` pelo IP obtido no Step 2.2.
+
+**Exemplo:**
+```bash
+ssh -i ~/.ssh/id_ed25519 ubuntu@54.123.456.789
+```
+
+**O que acontece:** Conecta remotamente na instância EC2 via SSH.
+
+**Resultado esperado:** Você estará logado como usuário `ubuntu` na máquina remota.
+
+#### 📸 Screenshot Step 3.1 - Conexão SSH
+
+![Connection SSH](./src/prints/pingSSH.png)
+
+---
+
+### Step 3.2: Verificar Status do Nginx
+
+**Comando executado (dentro da EC2):**
+```bash
+sudo systemctl status nginx
+```
+
+**Resultado esperado:** Status "active (running)" - Nginx está rodando.
+
+#### 📸 Screenshot Step 3.2 - Status do Nginx
+
+![Status Nginx](./src/prints/nginxStatus.png)
+
+---
+
+### Step 3.3: Sair da EC2
+
+**Comando executado:**
+```bash
+exit
 ```
 
 ---
 
-## 🧹 Destruir a Infraestrutura
+### Step 4.1: Acessar via Navegador (Método 1 - Navegador GUI)
 
-Quando terminar e quiser eliminar todos os recursos (para evitar custos):
+**URL:** `http://<IP_PUBLICO>` (obtido no Step 2.2)
 
+**Exemplo:** `http://54.123.456.789`
+
+**O que acontece:** Abre a página web no navegador.
+
+**Resultado esperado:** Página mostrando: "Deploy Automatizado com Terraform e Ansible"
+
+#### 📸 Screenshot Step 4.1 - Página no Navegador
+
+![Web Page](./src/prints/web.png)
+
+---
+
+### Step 5.1: Destruir Infraestrutura
+
+**Comando executado (na pasta terraform/):**
 ```bash
 terraform destroy
 ```
 
-Confirme digitando `yes`.
+**Confirmação:**
+```
+Type 'yes' to confirm
+```
 
-**⚠️ AVISO**: Isso eliminará TODOS os recursos criados (VPC, EC2, Security Group, etc.).
+**O que acontece:** Terraform remove TODOS os recursos criados (EC2, VPC, Security Group, etc.).
+
+#### 📸 Screenshot Step 5.1a - Plano de Destroy
+
+![Terraform Destroy](./src/prints/terraformDestroy.png)
+
+#### 📸 Screenshot Step 5.1b - Progresso e conclusão do Destroy
+
+![Terraform Destroy Execute](./src/prints/terraformDestroyExecute.png)
 
 ---
 
 ## 📋 Resumo da Arquitetura
 
 ```
-┌─────────────────────────────────────────────┐
-│           AWS (us-east-1)                   │
-├─────────────────────────────────────────────┤
-│  VPC (10.0.0.0/16)                          │
-│  ├─ Internet Gateway                        │
-│  └─ Subnet Pública (10.0.1.0/24)            │
-│     ├─ Security Group (SSH, HTTP)          │
-│     └─ EC2 Instance (Ubuntu 22.04)         │
-│        ├─ Ansible: atualiza sistema        │
-│        ├─ Ansible: instala Nginx           │
-│        └─ Ansible: cria página HTML        │
-└─────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                      AWS (us-east-1)                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  VPC: 10.0.0.0/16                                  │   │
+│  │  ├─ Internet Gateway                               │   │
+│  │  └─ Subnet Pública: 10.0.1.0/24                    │   │
+│  │     ├─ Security Group (SSH:22, HTTP:80)            │   │
+│  │     └─ EC2 Instance (t3.micro)                     │   │
+│  │        ├─ Ubuntu 22.04 LTS                         │   │
+│  │        ├─ Ansible: apt upgrade ✓                  │   │
+│  │        ├─ Ansible: instala Nginx ✓                │   │
+│  │        └─ Ansible: cria página HTML ✓             │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+
+          ↓ HTTP/HTTPS via porta 80
+    
+    [Navegador ou Curl]
+    Acessa: http://IP_PUBLICO
+    Retorna: "Deploy Automatizado com Terraform e Ansible"
 ```
 
 ---
 
-## ✅ Checklist Final
+## 📝 NOTAS IMPORTANTES
 
-- [ ] Sistema atualizado
-- [ ] SSH key gerada
-- [ ] Ansible instalado
-- [ ] Terraform instalado
-- [ ] AWS CLI v2 instalado
-- [ ] Credenciais AWS configuradas
-- [ ] `terraform init` executado
-- [ ] `terraform plan` sem erros
-- [ ] `terraform apply` concluído
-- [ ] URL do servidor acessível
+1. **Ordem de Execução**: Siga a ordem dos steps para garantir que tudo funcione corretamente.
+
+2. **Salvar IPs**: Anote o IP público gerado no Step 2.2, você precisará para os próximos steps.
+
+3. **Tempo de Espera**: A EC2 pode levar alguns minutos para estar completamente pronta. Se o SSH falhar na primeira tentativa, aguarde alguns segundos e tente novamente.
+
+4. **Custos AWS**: Cada recurso criado pode gerar custos. Certifique-se de executar `terraform destroy` ao final para evitar cobranças desnecessárias.
 
 ---
 
@@ -599,11 +748,4 @@ cat ~/.aws/credentials
 
 ---
 
-## 📚 Referências
-
-- [Documentação Terraform](https://www.terraform.io/docs)
-- [Documentação Ansible](https://docs.ansible.com)
-- [AWS EC2 Documentation](https://docs.aws.amazon.com/ec2)
-- [AWS CLI Documentation](https://docs.aws.amazon.com/cli)
-
-**Última atualização**: 03/02/2026
+**Última atualização**: 06/02/2026
